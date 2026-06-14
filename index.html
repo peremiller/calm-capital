@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Calm Capital — a behavioral wealth companion</title>
+<style>
+  :root {
+    --bg: #0f1417;
+    --panel: #161d22;
+    --panel-2: #1d262c;
+    --line: #2a363e;
+    --ink: #e8eef2;
+    --muted: #8ea0ac;
+    --faint: #5f7280;
+    --accent: #4db8a4;
+    --accent-soft: #1f3a36;
+    --gold: #d9a441;
+    --gold-soft: #3a2f17;
+    --danger: #e07a5f;
+    --danger-soft: #3a221c;
+    --blue: #6ea8d8;
+    --radius: 14px;
+    --shadow: 0 6px 24px rgba(0,0,0,.35);
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(1200px 600px at 80% -10%, #16242a 0%, var(--bg) 55%);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 28px 22px 80px; }
+
+  /* Header */
+  header.app {
+    display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+    border-bottom: 1px solid var(--line); padding-bottom: 18px; margin-bottom: 8px;
+  }
+  header.app h1 { font-size: 1.5rem; margin: 0; letter-spacing: -0.02em; font-weight: 650; }
+  header.app .dot { color: var(--accent); }
+  header.app p { margin: 0; color: var(--muted); font-size: .92rem; }
+  .spacer { flex: 1; }
+
+  /* Bear-market banner */
+  #bearBanner {
+    display: none; align-items: center; gap: 12px;
+    background: linear-gradient(90deg, var(--danger-soft), transparent);
+    border: 1px solid #5a352b; border-left: 4px solid var(--danger);
+    border-radius: 12px; padding: 12px 16px; margin: 16px 0 4px;
+    font-size: .92rem;
+  }
+  #bearBanner.on { display: flex; }
+  #bearBanner strong { color: var(--danger); }
+
+  /* Nav */
+  nav.tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 26px; }
+  nav.tabs button {
+    background: var(--panel); color: var(--muted); border: 1px solid var(--line);
+    padding: 9px 14px; border-radius: 999px; cursor: pointer; font-size: .86rem;
+    font-weight: 500; transition: all .15s ease; display: inline-flex; align-items: center; gap: 7px;
+  }
+  nav.tabs button .ix {
+    font-size: .72rem; color: var(--faint); font-variant-numeric: tabular-nums;
+    border: 1px solid var(--line); border-radius: 5px; padding: 0 5px; line-height: 1.5;
+  }
+  nav.tabs button:hover { color: var(--ink); border-color: #3a4a54; }
+  nav.tabs button.active { background: var(--accent-soft); color: var(--ink); border-color: var(--accent); }
+  nav.tabs button.active .ix { border-color: var(--accent); color: var(--accent); }
+
+  /* Panels */
+  section.view { display: none; animation: fade .25s ease; }
+  section.view.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 22px 24px; margin-bottom: 18px; box-shadow: var(--shadow);
+  }
+  .card h2 { margin: 0 0 4px; font-size: 1.18rem; letter-spacing: -0.01em; }
+  .card .lede { color: var(--muted); margin: 0 0 18px; font-size: .92rem; max-width: 62ch; }
+  h3.mini { font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); margin: 22px 0 10px; }
+
+  label.fld { display: block; margin-bottom: 14px; font-size: .85rem; color: var(--muted); }
+  label.fld span.t { display: block; margin-bottom: 5px; color: var(--ink); font-weight: 500; }
+  input[type=text], input[type=number], input[type=date], input[type=month], textarea, select {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--line); color: var(--ink);
+    border-radius: 9px; padding: 10px 12px; font-size: .95rem; font-family: inherit; resize: vertical;
+  }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
+  textarea { min-height: 90px; line-height: 1.6; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 680px) { .row, .row3 { grid-template-columns: 1fr; } }
+
+  button.btn {
+    background: var(--accent); color: #07120f; border: none; padding: 10px 18px;
+    border-radius: 9px; font-weight: 600; cursor: pointer; font-size: .9rem; transition: filter .15s;
+  }
+  button.btn:hover { filter: brightness(1.08); }
+  button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  button.ghost:hover { color: var(--ink); border-color: #3a4a54; }
+  button.danger { background: var(--danger); color: #1a0d09; }
+  button.gold { background: var(--gold); color: #1c1505; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
+  .saved { color: var(--accent); font-size: .82rem; opacity: 0; transition: opacity .3s; }
+  .saved.show { opacity: 1; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 14px; }
+  .stat { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .stat .lbl { font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; color: var(--faint); }
+  .stat .val { font-size: 1.5rem; font-weight: 650; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .stat .val.pos { color: var(--accent); }
+  .stat .val.neg { color: var(--danger); }
+  .stat .sub { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); }
+  th { color: var(--faint); font-weight: 500; font-size: .76rem; text-transform: uppercase; letter-spacing: .05em; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: none; }
+  .del-x { color: var(--faint); cursor: pointer; background: none; border: none; font-size: 1rem; padding: 2px 6px; }
+  .del-x:hover { color: var(--danger); }
+
+  .pill { display: inline-block; font-size: .74rem; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  .pill.green { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+  .pill.gold { background: var(--gold-soft); color: var(--gold); border-color: var(--gold); }
+  .pill.red { background: var(--danger-soft); color: var(--danger); border-color: var(--danger); }
+
+  .list-item { background: var(--panel-2); border: 1px solid var(--line); border-radius: 11px; padding: 14px 16px; margin-bottom: 10px; }
+  .list-item .head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .list-item .head .yr { font-weight: 650; color: var(--gold); font-variant-numeric: tabular-nums; }
+  .list-item .body { color: var(--muted); font-size: .9rem; margin-top: 6px; }
+
+  .toggle-wrap { display: flex; align-items: center; gap: 14px; }
+  .switch { position: relative; width: 54px; height: 30px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; inset: 0; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; transition: .2s; cursor: pointer; }
+  .slider:before { content: ""; position: absolute; height: 22px; width: 22px; left: 3px; top: 3px; background: var(--muted); border-radius: 50%; transition: .2s; }
+  .switch input:checked + .slider { background: var(--danger-soft); border-color: var(--danger); }
+  .switch input:checked + .slider:before { transform: translateX(24px); background: var(--danger); }
+
+  .blur-guard { filter: blur(8px); user-select: none; pointer-events: none; transition: filter .2s; }
+  .reveal-note { font-size: .82rem; color: var(--faint); font-style: italic; }
+
+  .quote { border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; color: var(--muted); font-style: italic; margin: 14px 0; }
+  .callout { background: var(--accent-soft); border: 1px solid #2c5048; border-radius: 11px; padding: 14px 16px; font-size: .9rem; margin: 14px 0; }
+  .callout.gold { background: var(--gold-soft); border-color: #4a3c1c; }
+  .callout.red { background: var(--danger-soft); border-color: #5a352b; }
+
+  /* Modal gate */
+  .modal-bg { position: fixed; inset: 0; background: rgba(4,8,10,.78); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50; backdrop-filter: blur(3px); }
+  .modal-bg.show { display: flex; }
+  .modal { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; max-width: 600px; width: 100%; padding: 26px 28px; box-shadow: var(--shadow); max-height: 86vh; overflow:auto; }
+  .modal h3 { margin: 0 0 6px; font-size: 1.2rem; }
+  .modal .ips-readback { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; font-size: .9rem; white-space: pre-wrap; max-height: 280px; overflow: auto; margin: 14px 0; color: var(--ink); }
+  .check-line { display: flex; gap: 10px; align-items: flex-start; margin: 10px 0; font-size: .9rem; cursor: pointer; }
+  .check-line input { margin-top: 4px; }
+
+  .empty { color: var(--faint); font-size: .9rem; font-style: italic; padding: 8px 0; }
+  .bar-track { height: 26px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; display: flex; }
+  .bar-floor { background: var(--accent); height: 100%; }
+  .bar-disc { background: var(--gold); height: 100%; }
+  .footer-note { color: var(--faint); font-size: .8rem; text-align: center; margin-top: 40px; }
+  canvas { width: 100%; height: auto; display: block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="app">
+    <div>
+      <h1>Calm Capital <span class="dot">●</span></h1>
+      <p>A behavioral companion for spending and investing without anxiety.</p>
+    </div>
+    <div class="spacer"></div>
+    <div class="actions">
+      <button class="ghost" id="exportBtn">Export data</button>
+      <button class="ghost" id="importBtn">Import</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none" />
+    </div>
+  </header>
+
+  <div id="bearBanner">
+    <strong>Bear-market mode is ON.</strong>
+    <span>You've pre-committed to ignoring balances right now. Only rebalancing actions are surfaced.</span>
+  </div>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <!-- 1. IPS -->
+  <section class="view" data-view="ips">
+    <div class="card">
+      <h2>Investment Policy Statement</h2>
+      <p class="lede">Your constitution. Write it once in calm weather; consult it — not your feelings — before any major change. The app will make you re-read it before you proceed.</p>
+
+      <label class="fld"><span class="t">Purpose &amp; time horizon — what is this money for?</span>
+        <textarea id="ips_purpose" placeholder="e.g. Fund our retirement from 2041 onward and leave a cushion for the kids. Horizon: 15+ years."></textarea></label>
+
+      <div class="row">
+        <label class="fld"><span class="t">Target asset allocation</span>
+          <textarea id="ips_alloc" placeholder="e.g. 60% global equities / 30% bonds / 10% cash + short-term."></textarea></label>
+        <label class="fld"><span class="t">Rebalancing rule</span>
+          <textarea id="ips_rebal" placeholder="e.g. Rebalance once a year in January, or whenever any class drifts >5% from target."></textarea></label>
+      </div>
+
+      <label class="fld"><span class="t">What I will NOT do (my guardrails)</span>
+        <textarea id="ips_rules" placeholder="e.g. I will not sell equities during a declared bear market. I will not check balances daily. I will not chase a hot stock with more than 2% of the portfolio."></textarea></label>
+
+      <label class="fld"><span class="t">Conditions that DO justify a change</span>
+        <textarea id="ips_change" placeholder="e.g. A major life event (job loss, new child), a change in goals, or a planned annual rebalance. Market noise is not a reason."></textarea></label>
+
+      <div class="actions">
+        <button class="btn" id="ips_save">Save statement</button>
+        <span class="saved" id="ips_saved">Saved ✓</span>
+        <span class="spacer"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Before a major portfolio change</h2>
+      <p class="lede">Big move planned — selling a large position, changing allocation, going to cash? Run the gate. It forces you to re-read your own words first.</p>
+      <div class="callout">A "major change" = anything you'd regret if the market did the opposite the next morning.</div>
+      <button class="gold btn" id="openGate">I'm about to make a major change →</button>
+      <h3 class="mini">Change log</h3>
+      <div id="changeLog"><div class="empty">No changes logged yet.</div></div>
+    </div>
+  </section>
+
+  <!-- 2. Paycheck -->
+  <section class="view" data-view="paycheck">
+    <div class="card">
+      <h2>Synthetic paycheck</h2>
+      <p class="lede">Spending from a lumpy portfolio feels scary. Convert it into a steady, automatic monthly transfer to checking — so it lands like a salary, not a gamble.</p>
+      <div class="row3">
+        <label class="fld"><span class="t">Annual draw from portfolio</span>
+          <input type="number" id="pc_annual" placeholder="60000" /></label>
+        <label class="fld"><span class="t">Transfer day each month</span>
+          <input type="number" id="pc_day" min="1" max="28" placeholder="1" /></label>
+        <label class="fld"><span class="t">From → To accounts</span>
+          <input type="text" id="pc_accounts" placeholder="Brokerage → Checking" /></label>
+      </div>
+      <div class="actions">
+        <button class="btn" id="pc_save">Save plan</button>
+        <span class="saved" id="pc_saved">Saved ✓</span>
+      </div>
+      <h3 class="mini">Your paycheck</h3>
+      <div class="stat-grid" id="pc_stats"></div>
+      <div class="callout gold" id="pc_next"></div>
+      <p class="reveal-note">This app doesn't move money. Set the recurring transfer up once at your brokerage/bank; this is your plan of record and reminder.</p>
+    </div>
+  </section>
+
+  <!-- 3. Net worth -->
+  <section class="view" data-view="networth">
+    <div class="card">
+      <h2>Net-worth dashboard</h2>
+      <p class="lede">One number, once a month. Replace the anxious daily glance with a single deliberate data point. Trend beats noise.</p>
+      <div class="row3">
+        <label class="fld"><span class="t">Month</span><input type="month" id="nw_month" /></label>
+        <label class="fld"><span class="t">Assets</span><input type="number" id="nw_assets" placeholder="850000" /></label>
+        <label class="fld"><span class="t">Liabilities</span><input type="number" id="nw_liab" placeholder="120000" /></label>
+      </div>
+      <div class="actions"><button class="btn" id="nw_add">Log this month</button></div>
+
+      <div id="nw_dash" data-guardable="balances">
+        <h3 class="mini">Overview</h3>
+        <div class="stat-grid" id="nw_stats"></div>
+        <h3 class="mini">Trend</h3>
+        <canvas id="nw_chart" width="1000" height="280"></canvas>
+        <h3 class="mini">History</h3>
+        <div id="nw_table"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Money meeting -->
+  <section class="view" data-view="meeting">
+    <div class="card">
+      <h2>Annual money meeting</h2>
+      <p class="lede">Once a year, sit down with your partner — not to budget, but to align on values, fears, and what "enough" means. Money fights are usually unspoken-fear fights.</p>
+      <div class="row">
+        <label class="fld"><span class="t">Next meeting date</span><input type="date" id="mt_date" /></label>
+        <label class="fld"><span class="t">Where / how</span><input type="text" id="mt_where" placeholder="Saturday brunch, kitchen table, no phones" /></label>
+      </div>
+      <div class="actions">
+        <button class="btn" id="mt_save">Save</button>
+        <button class="ghost" id="mt_ics">Add to calendar (.ics)</button>
+        <span class="saved" id="mt_saved">Saved ✓</span>
+      </div>
+      <div class="callout" id="mt_countdown"></div>
+
+      <h3 class="mini">Agenda &amp; shared notes</h3>
+      <label class="fld"><span class="t">What went well with money this year?</span><textarea id="mt_well"></textarea></label>
+      <label class="fld"><span class="t">What are we each afraid of? (say it out loud)</span><textarea id="mt_fears"></textarea></label>
+      <label class="fld"><span class="t">What does "enough" look like for us?</span><textarea id="mt_enough"></textarea></label>
+      <label class="fld"><span class="t">One thing we'll spend MORE on, guilt-free</span><textarea id="mt_spend"></textarea></label>
+      <div class="actions"><button class="btn" id="mt_notesSave">Save notes</button><span class="saved" id="mt_notesSaved">Saved ✓</span></div>
+    </div>
+  </section>
+
+  <!-- 5. Income floor -->
+  <section class="view" data-view="floor">
+    <div class="card">
+      <h2>Income floor → permission to spend</h2>
+      <p class="lede">Your guaranteed income (pension, Social Security, annuities) covers the essentials no matter what markets do. Once the floor is secure, the discretionary portfolio is for <em>living</em> — spend it freely.</p>
+      <div class="row">
+        <label class="fld"><span class="t">Guaranteed annual income (the floor)</span><input type="number" id="fl_income" placeholder="48000" /></label>
+        <label class="fld"><span class="t">Essential annual expenses</span><input type="number" id="fl_essential" placeholder="42000" /></label>
+      </div>
+      <label class="fld"><span class="t">Discretionary portfolio value</span><input type="number" id="fl_disc" placeholder="700000" /></label>
+      <div class="actions"><button class="btn" id="fl_save">Save</button><span class="saved" id="fl_saved">Saved ✓</span></div>
+
+      <div id="fl_result"></div>
+    </div>
+  </section>
+
+  <!-- 6. Recoveries -->
+  <section class="view" data-view="recoveries">
+    <div class="card">
+      <h2>The recoveries ledger</h2>
+      <p class="lede">A written list of every storm the market has survived. Read it when your hands itch to sell. The market has recovered from <strong>100%</strong> of its declines so far.</p>
+      <div class="row3">
+        <label class="fld"><span class="t">Event &amp; year</span><input type="text" id="rc_event" placeholder="2008 — Global Financial Crisis" /></label>
+        <label class="fld"><span class="t">Peak drop</span><input type="text" id="rc_drop" placeholder="-57%" /></label>
+        <label class="fld"><span class="t">Time to recover</span><input type="text" id="rc_time" placeholder="~4 years" /></label>
+      </div>
+      <label class="fld"><span class="t">What I want to remember</span><textarea id="rc_note" placeholder="Everyone said 'this time is different.' Anyone who held — or bought — came out ahead."></textarea></label>
+      <div class="actions"><button class="btn" id="rc_add">Add to ledger</button><button class="ghost" id="rc_seed">Load historical examples</button></div>
+      <div id="rc_list"></div>
+    </div>
+  </section>
+
+  <!-- 7. Bear mode -->
+  <section class="view" data-view="bear">
+    <div class="card">
+      <h2>Bear-market protocol</h2>
+      <p class="lede">A pre-commitment you make in calm times: during a declared bear market you will <strong>not</strong> look at balances and will <strong>not</strong> sell. The only allowed action is your scheduled rebalance.</p>
+
+      <div class="toggle-wrap">
+        <label class="switch"><input type="checkbox" id="bearToggle" /><span class="slider"></span></label>
+        <div>
+          <div style="font-weight:600" id="bearState">Normal market — balances visible</div>
+          <div class="reveal-note" id="bearSince"></div>
+        </div>
+      </div>
+
+      <div class="callout red" style="margin-top:18px">
+        <strong>While this is on:</strong>
+        <ul style="margin:8px 0 0; padding-left:18px">
+          <li>Net-worth balances are blurred app-wide (you can still log them — you just won't stare).</li>
+          <li>The only sanctioned move is rebalancing per your IPS rule.</li>
+          <li>Re-read your recoveries ledger and your IPS guardrails instead of acting.</li>
+        </ul>
+      </div>
+
+      <div id="bear_rebal" style="display:none">
+        <h3 class="mini">Sanctioned action: rebalance</h3>
+        <div class="callout gold" id="bear_rebal_rule"></div>
+        <p class="reveal-note">Rebalancing means selling what's up to buy what's down — back to your target weights. It's the disciplined opposite of panic-selling.</p>
+      </div>
+
+      <h3 class="mini">Pre-commitment, in my own words</h3>
+      <label class="fld"><textarea id="bear_pledge" placeholder="During any declared bear market I, ____, will not check balances more than once a month and will not sell a single share outside of my January rebalance. Signed, me — on a calm day."></textarea></label>
+      <div class="actions"><button class="btn" id="bear_save">Sign &amp; save</button><span class="saved" id="bear_saved">Saved ✓</span></div>
+    </div>
+  </section>
+
+  <p class="footer-note">Calm Capital runs entirely in your browser. All data stays on this device (localStorage). Not financial advice.</p>
+</div>
+
+<!-- IPS gate modal -->
+<div class="modal-bg" id="gateModal">
+  <div class="modal">
+    <h3>Re-read before you change anything</h3>
+    <p style="color:var(--muted); margin:.2rem 0 0; font-size:.9rem">You wrote these rules when you were calm. Read them now.</p>
+    <div class="ips-readback" id="gateReadback"></div>
+    <label class="check-line"><input type="checkbox" id="g1"><span>I have re-read my Investment Policy Statement just now.</span></label>
+    <label class="check-line"><input type="checkbox" id="g2"><span>This change is driven by a condition my IPS allows — not by market noise or fear.</span></label>
+    <label class="check-line"><input type="checkbox" id="g3"><span>I've waited at least 24 hours since I first wanted to do this.</span></label>
+    <label class="fld" style="margin-top:8px"><span class="t">What's the change, and which IPS condition justifies it?</span>
+      <textarea id="gateReason" placeholder="e.g. Annual rebalance — equities drifted to 68% vs 60% target. Allowed by my rebalancing rule."></textarea></label>
+    <div class="actions">
+      <button class="ghost" id="gateCancel">Cancel — I'll wait</button>
+      <button class="btn" id="gateProceed" disabled>Log change &amp; proceed</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('cc_'+k); return v===null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v) { localStorage.setItem('cc_'+k, JSON.stringify(v)); }
+};
+const fmt = (n) => isFinite(n) ? '$' + Math.round(n).toLocaleString() : '—';
+const flash = (id) => { const e=$(id); if(!e) return; e.classList.add('show'); setTimeout(()=>e.classList.remove('show'), 1600); };
+
+/* ---------- Tabs ---------- */
+const TABS = [
+  ['ips','Policy Statement'],
+  ['paycheck','Paycheck'],
+  ['networth','Net Worth'],
+  ['meeting','Money Meeting'],
+  ['floor','Income Floor'],
+  ['recoveries','Recoveries'],
+  ['bear','Bear Mode'],
+];
+const tabsEl = $('tabs');
+TABS.forEach(([v,label],i)=>{
+  const b = document.createElement('button');
+  b.innerHTML = `<span class="ix">${i+1}</span> ${label}`;
+  b.dataset.target = v;
+  b.onclick = ()=> showView(v);
+  tabsEl.appendChild(b);
+});
+function showView(v){
+  document.querySelectorAll('.view').forEach(s=> s.classList.toggle('active', s.dataset.view===v));
+  document.querySelectorAll('#tabs button').forEach(b=> b.classList.toggle('active', b.dataset.target===v));
+  store.set('lastView', v);
+  if(v==='networth') drawChart();
+}
+
+/* ---------- 1. IPS ---------- */
+const IPS_FIELDS = ['ips_purpose','ips_alloc','ips_rebal','ips_rules','ips_change'];
+function loadIPS(){ IPS_FIELDS.forEach(f=> $(f).value = store.get(f,'')); }
+$('ips_save').onclick = ()=>{ IPS_FIELDS.forEach(f=> store.set(f,$(f).value)); flash('ips_saved'); };
+
+function ipsReadbackText(){
+  return [
+    ['Purpose & horizon', store.get('ips_purpose','')],
+    ['Target allocation', store.get('ips_alloc','')],
+    ['Rebalancing rule', store.get('ips_rebal','')],
+    ['Guardrails — what I will NOT do', store.get('ips_rules','')],
+    ['Conditions that justify a change', store.get('ips_change','')],
+  ].filter(([_,v])=>v.trim()).map(([k,v])=>`■ ${k}\n${v}`).join('\n\n') || '(You haven\'t written your IPS yet. Go do that first — tab 1.)';
+}
+
+$('openGate').onclick = ()=>{
+  $('gateReadback').textContent = ipsReadbackText();
+  ['g1','g2','g3'].forEach(id=>$(id).checked=false);
+  $('gateReason').value='';
+  $('gateProceed').disabled = true;
+  $('gateModal').classList.add('show');
+};
+['g1','g2','g3','gateReason'].forEach(id=> $(id).addEventListener('input', ()=>{
+  $('gateProceed').disabled = !($('g1').checked && $('g2').checked && $('g3').checked && $('gateReason').value.trim());
+}));
+$('gateCancel').onclick = ()=> $('gateModal').classList.remove('show');
+$('gateProceed').onclick = ()=>{
+  const log = store.get('changeLog', []);
+  log.unshift({ date: new Date().toISOString().slice(0,10), reason: $('gateReason').value.trim() });
+  store.set('changeLog', log);
+  $('gateModal').classList.remove('show');
+  renderChangeLog();
+};
+function renderChangeLog(){
+  const log = store.get('changeLog', []);
+  const el = $('changeLog');
+  if(!log.length){ el.innerHTML = '<div class="empty">No changes logged yet.</div>'; return; }
+  el.innerHTML = log.map((c,i)=>`<div class="list-item"><div class="head"><span class="pill green">${c.date}</span>
+    <button class="del-x" data-clog="${i}">✕</button></div><div class="body">${esc(c.reason)}</div></div>`).join('');
+  el.querySelectorAll('[data-clog]').forEach(b=> b.onclick=()=>{ const l=store.get('changeLog',[]); l.splice(+b.dataset.clog,1); store.set('changeLog',l); renderChangeLog(); });
+}
+
+/* ---------- 2. Paycheck ---------- */
+const PC = ['pc_annual','pc_day','pc_accounts'];
+function loadPC(){ PC.forEach(f=> $(f).value = store.get(f, '')); renderPC(); }
+$('pc_save').onclick = ()=>{ PC.forEach(f=> store.set(f,$(f).value)); flash('pc_saved'); renderPC(); };
+function renderPC(){
+  const annual = +store.get('pc_annual',0);
+  const monthly = annual/12, weekly = annual/52, day = store.get('pc_day','');
+  $('pc_stats').innerHTML = `
+    <div class="stat"><div class="lbl">Monthly paycheck</div><div class="val pos">${fmt(monthly)}</div><div class="sub">auto-transfer</div></div>
+    <div class="stat"><div class="lbl">Weekly equivalent</div><div class="val">${fmt(weekly)}</div></div>
+    <div class="stat"><div class="lbl">Annual draw</div><div class="val">${fmt(annual)}</div></div>`;
+  const acct = store.get('pc_accounts','') || 'portfolio → checking';
+  $('pc_next').innerHTML = annual ? `Set a recurring transfer of <strong>${fmt(monthly)}</strong> on day <strong>${day||'1'}</strong> of each month: <strong>${esc(acct)}</strong>. Then forget about it — it just shows up, like payday.` :
+    'Enter your annual draw to see your synthetic paycheck.';
+}
+
+/* ---------- 3. Net worth ---------- */
+function loadNW(){
+  if(!$('nw_month').value){ $('nw_month').value = new Date().toISOString().slice(0,7); }
+  renderNW();
+}
+$('nw_add').onclick = ()=>{
+  const m=$('nw_month').value, a=+$('nw_assets').value, l=+$('nw_liab').value;
+  if(!m){ alert('Pick a month'); return; }
+  const data = store.get('nw', []).filter(r=> r.m!==m);
+  data.push({ m, a, l, n: a-l });
+  data.sort((x,y)=> x.m<y.m?-1:1);
+  store.set('nw', data);
+  $('nw_assets').value=''; $('nw_liab').value='';
+  renderNW();
+};
+function renderNW(){
+  const data = store.get('nw', []);
+  const stats = $('nw_stats'), table = $('nw_table');
+  if(!data.length){ stats.innerHTML='<div class="empty">No entries yet — log your first month above.</div>'; table.innerHTML=''; drawChart(); return; }
+  const last = data[data.length-1], prev = data[data.length-2];
+  const delta = prev ? last.n - prev.n : 0;
+  const first = data[0];
+  stats.innerHTML = `
+    <div class="stat"><div class="lbl">Net worth (${last.m})</div><div class="val pos">${fmt(last.n)}</div></div>
+    <div class="stat"><div class="lbl">vs last month</div><div class="val ${delta>=0?'pos':'neg'}">${delta>=0?'+':''}${fmt(delta)}</div><div class="sub">${prev?prev.m:'—'} → ${last.m}</div></div>
+    <div class="stat"><div class="lbl">Since ${first.m}</div><div class="val ${last.n-first.n>=0?'pos':'neg'}">${last.n-first.n>=0?'+':''}${fmt(last.n-first.n)}</div></div>
+    <div class="stat"><div class="lbl">Months tracked</div><div class="val">${data.length}</div></div>`;
+  table.innerHTML = `<table><thead><tr><th>Month</th><th class="num">Assets</th><th class="num">Liabilities</th><th class="num">Net worth</th><th></th></tr></thead><tbody>${
+    data.slice().reverse().map(r=>`<tr><td>${r.m}</td><td class="num">${fmt(r.a)}</td><td class="num">${fmt(r.l)}</td><td class="num">${fmt(r.n)}</td><td><button class="del-x" data-nw="${r.m}">✕</button></td></tr>`).join('')
+  }</tbody></table>`;
+  table.querySelectorAll('[data-nw]').forEach(b=> b.onclick=()=>{ store.set('nw', store.get('nw',[]).filter(r=>r.m!==b.dataset.nw)); renderNW(); });
+  drawChart();
+}
+function drawChart(){
+  const c = $('nw_chart'); if(!c) return;
+  const ctx = c.getContext('2d');
+  const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+  const data = store.get('nw', []);
+  if(data.length<1) return;
+  const pad=46, vals=data.map(d=>d.n);
+  let min=Math.min(...vals,0), max=Math.max(...vals);
+  if(max===min){ max=min+1; }
+  const x=(i)=> pad + (data.length===1? (W-2*pad)/2 : i*(W-2*pad)/(data.length-1));
+  const y=(v)=> H-pad - (v-min)/(max-min)*(H-2*pad);
+  // grid
+  ctx.strokeStyle='#2a363e'; ctx.lineWidth=1; ctx.fillStyle='#5f7280'; ctx.font='12px -apple-system,sans-serif';
+  for(let g=0;g<=4;g++){ const v=min+(max-min)*g/4, yy=y(v); ctx.beginPath(); ctx.moveTo(pad,yy); ctx.lineTo(W-pad,yy); ctx.stroke(); ctx.fillText('$'+Math.round(v/1000)+'k', 4, yy+4); }
+  // area
+  ctx.beginPath(); ctx.moveTo(x(0),y(data[0].n));
+  data.forEach((d,i)=> ctx.lineTo(x(i),y(d.n)));
+  ctx.lineTo(x(data.length-1),H-pad); ctx.lineTo(x(0),H-pad); ctx.closePath();
+  const grad=ctx.createLinearGradient(0,0,0,H); grad.addColorStop(0,'rgba(77,184,164,.30)'); grad.addColorStop(1,'rgba(77,184,164,0)'); ctx.fillStyle=grad; ctx.fill();
+  // line
+  ctx.beginPath(); ctx.strokeStyle='#4db8a4'; ctx.lineWidth=2.5;
+  data.forEach((d,i)=> i? ctx.lineTo(x(i),y(d.n)) : ctx.moveTo(x(i),y(d.n))); ctx.stroke();
+  // points
+  data.forEach((d,i)=>{ ctx.beginPath(); ctx.fillStyle='#4db8a4'; ctx.arc(x(i),y(d.n),3.5,0,7); ctx.fill(); });
+}
+
+/* ---------- 4. Meeting ---------- */
+const MT=['mt_date','mt_where','mt_well','mt_fears','mt_enough','mt_spend'];
+function loadMT(){ MT.forEach(f=> $(f).value = store.get(f,'')); countdown(); }
+$('mt_save').onclick=()=>{ ['mt_date','mt_where'].forEach(f=>store.set(f,$(f).value)); flash('mt_saved'); countdown(); };
+$('mt_notesSave').onclick=()=>{ ['mt_well','mt_fears','mt_enough','mt_spend'].forEach(f=>store.set(f,$(f).value)); flash('mt_notesSaved'); };
+function countdown(){
+  const d = store.get('mt_date','');
+  if(!d){ $('mt_countdown').textContent='Set a date and protect it like any other important appointment.'; return; }
+  const days = Math.ceil((new Date(d) - new Date())/86400000);
+  $('mt_countdown').innerHTML = days>=0 ? `Next money meeting in <strong>${days}</strong> day${days===1?'':'s'} — ${new Date(d).toDateString()}.` :
+    `That date has passed (${Math.abs(days)} days ago). Time to schedule the next one.`;
+}
+$('mt_ics').onclick=()=>{
+  const d = store.get('mt_date',''); if(!d){ alert('Set a date first'); return; }
+  const dt = d.replace(/-/g,'');
+  const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Calm Capital//EN\nBEGIN:VEVENT\nUID:cc-${dt}@calmcapital\nDTSTART;VALUE=DATE:${dt}\nSUMMARY:Annual Money Meeting\nDESCRIPTION:Align on spending values\\, fears\\, and what enough means. ${(store.get('mt_where','')||'').replace(/,/g,'\\,')}\nRRULE:FREQ=YEARLY\nEND:VEVENT\nEND:VCALENDAR`;
+  dl('money-meeting.ics', ics, 'text/calendar');
+};
+
+/* ---------- 5. Floor ---------- */
+const FL=['fl_income','fl_essential','fl_disc'];
+function loadFL(){ FL.forEach(f=> $(f).value=store.get(f,'')); renderFL(); }
+$('fl_save').onclick=()=>{ FL.forEach(f=>store.set(f,$(f).value)); flash('fl_saved'); renderFL(); };
+function renderFL(){
+  const inc=+store.get('fl_income',0), ess=+store.get('fl_essential',0), disc=+store.get('fl_disc',0);
+  const surplus = inc-ess, covered = ess>0 ? Math.min(100, inc/ess*100) : 0;
+  const el=$('fl_result');
+  if(!inc && !ess){ el.innerHTML='<div class="empty">Enter your guaranteed income and essential expenses.</div>'; return; }
+  const secure = inc>=ess;
+  const discDraw = disc*0.04;
+  el.innerHTML = `
+    <h3 class="mini">Is the floor secure?</h3>
+    <div class="stat-grid">
+      <div class="stat"><div class="lbl">Floor covers essentials</div><div class="val ${secure?'pos':'neg'}">${covered.toFixed(0)}%</div><div class="sub">${fmt(inc)} vs ${fmt(ess)}</div></div>
+      <div class="stat"><div class="lbl">Floor surplus / (gap)</div><div class="val ${surplus>=0?'pos':'neg'}">${surplus>=0?'+':''}${fmt(surplus)}</div><div class="sub">per year</div></div>
+      <div class="stat"><div class="lbl">Discretionary portfolio</div><div class="val">${fmt(disc)}</div><div class="sub">~${fmt(discDraw)}/yr at 4%</div></div>
+    </div>
+    <div class="bar-track" style="margin:16px 0 6px" title="floor vs discretionary">
+      <div class="bar-floor" style="width:${pct(ess, ess+discDraw)}%"></div>
+      <div class="bar-disc" style="width:${pct(discDraw, ess+discDraw)}%"></div>
+    </div>
+    <div style="display:flex;gap:18px;font-size:.8rem;color:var(--muted)"><span><span style="color:var(--accent)">■</span> Essentials, covered by floor</span><span><span style="color:var(--gold)">■</span> Discretionary, for living</span></div>
+    ${ secure ?
+      `<div class="callout gold" style="margin-top:18px"><strong>Permission granted.</strong> Your guaranteed income already covers the essentials. The discretionary portfolio (${fmt(disc)}) is not for surviving — it's for <em>living</em>. A market dip there changes your vacation, not your survival. Spend it like you meant to.</div>` :
+      `<div class="callout red" style="margin-top:18px"><strong>Floor gap of ${fmt(-surplus)}/yr.</strong> First, close this gap — cover essentials with guaranteed or near-guaranteed income (delay Social Security, a bond ladder, an annuity). Permission to spend freely comes <em>after</em> the floor is solid.</div>` }`;
+}
+
+/* ---------- 6. Recoveries ---------- */
+const SEED=[
+  {event:'1987 — Black Monday', drop:'-34% in days', time:'~2 years', note:'A single-day crash of 22%. Fully recovered within two years; a decade later it was a footnote.'},
+  {event:'2000 — Dot-com bust', drop:'-49%', time:'~7 years', note:'The slowest recovery here. Still recovered. Diversified investors fared far better than tech-only ones.'},
+  {event:'2008 — Global Financial Crisis', drop:'-57%', time:'~4 years', note:'Felt like the end of the financial system. Those who held — or kept buying — were rewarded handsomely.'},
+  {event:'2020 — COVID crash', drop:'-34% in 33 days', time:'~5 months', note:'Fastest bear market in history, and one of the fastest recoveries. Panic-sellers locked in losses near the bottom.'},
+  {event:'2022 — Inflation / rate shock', drop:'-25%', time:'~2 years', note:'Stocks and bonds fell together. Staying invested and rebalancing beat fleeing to cash.'},
+];
+function loadRC(){ renderRC(); }
+$('rc_add').onclick=()=>{
+  const item={event:$('rc_event').value.trim(), drop:$('rc_drop').value.trim(), time:$('rc_time').value.trim(), note:$('rc_note').value.trim()};
+  if(!item.event){ alert('Name the event'); return; }
+  const list=store.get('rc',[]); list.unshift(item); store.set('rc',list);
+  ['rc_event','rc_drop','rc_time','rc_note'].forEach(f=>$(f).value=''); renderRC();
+};
+$('rc_seed').onclick=()=>{
+  const list=store.get('rc',[]);
+  SEED.forEach(s=>{ if(!list.some(x=>x.event===s.event)) list.push(s); });
+  store.set('rc',list); renderRC();
+};
+function renderRC(){
+  const list=store.get('rc',[]); const el=$('rc_list');
+  if(!list.length){ el.innerHTML='<div class="empty">Your ledger is empty. Add an event, or load the historical examples.</div>'; return; }
+  el.innerHTML = list.map((r,i)=>`<div class="list-item"><div class="head"><span class="yr">${esc(r.event)}</span>
+    <span><span class="pill red">${esc(r.drop||'—')}</span> <span class="pill green">recovered ${esc(r.time||'')}</span>
+    <button class="del-x" data-rc="${i}">✕</button></span></div>
+    ${r.note?`<div class="body">${esc(r.note)}</div>`:''}</div>`).join('');
+  el.querySelectorAll('[data-rc]').forEach(b=> b.onclick=()=>{ const l=store.get('rc',[]); l.splice(+b.dataset.rc,1); store.set('rc',l); renderRC(); });
+}
+
+/* ---------- 7. Bear mode ---------- */
+function loadBear(){
+  $('bear_pledge').value = store.get('bear_pledge','');
+  const on = store.get('bearOn', false);
+  $('bearToggle').checked = on;
+  applyBear(on, store.get('bearSince',''));
+}
+$('bear_save').onclick=()=>{ store.set('bear_pledge',$('bear_pledge').value); flash('bear_saved'); };
+$('bearToggle').onchange=()=>{
+  const on=$('bearToggle').checked;
+  store.set('bearOn', on);
+  let since = store.get('bearSince','');
+  if(on && !since){ since=new Date().toISOString().slice(0,10); store.set('bearSince',since); }
+  if(!on){ store.set('bearSince',''); since=''; }
+  applyBear(on, since);
+};
+function applyBear(on, since){
+  $('bearBanner').classList.toggle('on', on);
+  $('bearState').textContent = on ? 'BEAR MARKET declared — balances hidden' : 'Normal market — balances visible';
+  $('bearSince').textContent = on && since ? `Declared on ${new Date(since).toDateString()}. You committed to riding it out.` : '';
+  $('bear_rebal').style.display = on ? 'block' : 'none';
+  $('bear_rebal_rule').innerHTML = 'Your IPS rebalancing rule: <strong>'+(esc(store.get('ips_rebal','')) || '(not set — write it in tab 1)')+'</strong>';
+  // blur guardable balances
+  document.querySelectorAll('[data-guardable="balances"]').forEach(e=> e.classList.toggle('blur-guard', on));
+}
+
+/* ---------- utils ---------- */
+function esc(s){ return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function pct(part,total){ return total>0 ? (part/total*100) : 50; }
+function dl(name, content, type){
+  const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name; a.click(); URL.revokeObjectURL(url);
+}
+
+/* ---------- Export / import ---------- */
+$('exportBtn').onclick=()=>{
+  const out={}; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k.startsWith('cc_')) out[k]=localStorage.getItem(k); }
+  dl('calm-capital-backup.json', JSON.stringify(out,null,2), 'application/json');
+};
+$('importBtn').onclick=()=> $('importFile').click();
+$('importFile').onchange=(e)=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=()=>{ try{ const o=JSON.parse(r.result); Object.entries(o).forEach(([k,v])=>{ if(k.startsWith('cc_')) localStorage.setItem(k,v); }); location.reload(); }catch(err){ alert('Could not read that file.'); } }; r.readAsText(f);
+};
+
+/* ---------- init ---------- */
+loadIPS(); renderChangeLog(); loadPC(); loadNW(); loadMT(); loadFL(); loadRC(); loadBear();
+showView(store.get('lastView','ips'));
+window.addEventListener('resize', ()=>{ if($('networth').classList.contains('active')) drawChart(); });
+</script>
+</body>
+</html>
