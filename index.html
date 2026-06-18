@@ -4,6 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Calm Capital — a behavioral wealth companion</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<meta name="theme-color" content="#0f1417" />
+<meta name="description" content="A behavioral companion for spending and investing without anxiety." />
+<meta property="og:title" content="Calm Capital" />
+<meta property="og:description" content="A behavioral companion for spending and investing without anxiety." />
+<meta property="og:type" content="website" />
 <style>
   :root {
     --bg: #0f1417;
@@ -43,8 +49,9 @@
     border-bottom: 1px solid var(--line); padding-bottom: 18px; margin-bottom: 8px;
   }
   header.app h1 { font-size: 1.5rem; margin: 0; letter-spacing: -0.02em; font-weight: 650; }
-  header.app .dot { color: var(--accent); }
   header.app p { margin: 0; color: var(--muted); font-size: .92rem; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo-mark { width: 46px; height: 46px; flex: none; filter: drop-shadow(0 2px 8px rgba(0,0,0,.4)); }
   .spacer { flex: 1; }
 
   /* Bear-market banner */
@@ -174,9 +181,23 @@
 <div class="wrap">
 
   <header class="app">
-    <div>
-      <h1>Calm Capital <span class="dot">●</span></h1>
-      <p>A behavioral companion for spending and investing without anxiety.</p>
+    <div class="brand">
+      <svg class="logo-mark" viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#5fccb6"/><stop offset="1" stop-color="#2c7d6f"/>
+          </linearGradient>
+        </defs>
+        <circle cx="32" cy="32" r="30" fill="#10211d"/>
+        <circle cx="32" cy="32" r="29" fill="none" stroke="url(#ring)" stroke-width="3"/>
+        <path d="M14 41 Q23 39 31 32 T50 21" fill="none" stroke="#4db8a4" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M14 47 H50" stroke="#d9a441" stroke-width="2.6" stroke-linecap="round" opacity="0.9"/>
+        <circle cx="50" cy="21" r="3.4" fill="#d9a441"/>
+      </svg>
+      <div>
+        <h1>Calm Capital</h1>
+        <p>A behavioral companion for spending and investing without anxiety.</p>
+      </div>
     </div>
     <div class="spacer"></div>
     <div class="actions">

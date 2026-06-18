@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Calm Capital">
+  <defs>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5fccb6"/>
+      <stop offset="1" stop-color="#2c7d6f"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="#10211d"/>
+  <circle cx="32" cy="32" r="29" fill="none" stroke="url(#ring)" stroke-width="3"/>
+  <!-- calm rising curve: steady growth, no spikes -->
+  <path d="M14 41 Q23 39 31 32 T50 21" fill="none" stroke="#4db8a4" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- the guaranteed floor -->
+  <path d="M14 47 H50" stroke="#d9a441" stroke-width="2.6" stroke-linecap="round" opacity="0.9"/>
+  <circle cx="50" cy="21" r="3.4" fill="#d9a441"/>
+</svg>
