@@ -1,0 +1,21 @@
+name: Calm Capital backup safety
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test legacy backup validation and atomic data preservation
+        run: node --test tests/import-safety.test.mjs
+      - name: Verify canonical offline manifest remains reproducible
+        run: |
+          python3 scripts/build-offline.py
+          git diff --exit-code -- index.html sw.js offline-assets.json

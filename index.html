@@ -680,10 +680,84 @@ $('exportBtn').onclick=()=>{
   const out={}; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k.startsWith('cc_')) out[k]=localStorage.getItem(k); }
   dl('calm-capital-backup.json', JSON.stringify(out,null,2), 'application/json');
 };
+
+/* CALM_BACKUP_VALIDATION_START */
+function parseBackupForImport(text) {
+  if (typeof text !== 'string' || text.length > 2 * 1024 * 1024) throw new Error('Backup exceeds the 2 MB limit.');
+  const backup = JSON.parse(text);
+  if (!backup || typeof backup !== 'object' || Array.isArray(backup)) throw new Error('Backup must be a JSON object.');
+  const allowedStrings = new Set([
+    'ips_purpose','ips_alloc','ips_rebal','ips_rules','ips_change',
+    'pc_annual','pc_day','pc_accounts',
+    'mt_date','mt_where','mt_well','mt_fears','mt_enough','mt_spend',
+    'fl_income','fl_essential','fl_disc','bear_pledge','bearSince'
+  ]);
+  const allowedViews = new Set(['ips','paycheck','networth','meeting','floor','recoveries','bear']);
+  const allowedKeys = new Set([...allowedStrings, 'lastView','bearOn','nw','changeLog','rc']);
+  const validDate = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+  const validText = (v) => typeof v === 'string' && v.length <= 25000;
+  const entries = Object.entries(backup);
+  if (!entries.length) throw new Error('Backup has no Calm Capital data.');
+  for (const [key, raw] of entries) {
+    if (!key.startsWith('cc_') || !allowedKeys.has(key.slice(3))) throw new Error('Backup includes an unrecognized key.');
+    if (typeof raw !== 'string' || raw.length > 300000) throw new Error('Backup values must be JSON-encoded strings.');
+    const name = key.slice(3);
+    const value = JSON.parse(raw);
+    let valid = false;
+    if (allowedStrings.has(name)) valid = validText(value);
+    else if (name === 'lastView') valid = allowedViews.has(value);
+    else if (name === 'bearOn') valid = typeof value === 'boolean';
+    else if (name === 'nw') valid = Array.isArray(value) && value.length <= 1200 && value.every(
+      row => row && typeof row === 'object' && !Array.isArray(row)
+        && /^\d{4}-(0[1-9]|1[0-2])$/.test(row.m)
+        && ['a','l','n'].every(k => typeof row[k] === 'number' && Number.isFinite(row[k]))
+    );
+    else if (name === 'changeLog') valid = Array.isArray(value) && value.length <= 1200 && value.every(
+      row => row && typeof row === 'object' && validDate(row.date) && validText(row.reason)
+    );
+    else if (name === 'rc') valid = Array.isArray(value) && value.length <= 1200 && value.every(
+      row => row && typeof row === 'object' && ['event','drop','time','note'].every(k => validText(row[k]))
+    );
+    if (name === 'pc_day' && !/^(?:|[1-9]|[12]\d|3[01])$/.test(value)) valid = false;
+    if (['mt_date','bearSince'].includes(name) && value !== '' && !validDate(value)) valid = false;
+    if (!valid) throw new Error('Backup contains invalid data for ' + key + '.');
+  }
+  return entries;
+}
+function applyBackupAtomically(entries, storage) {
+  const original = new Map(entries.map(([key]) => [key, storage.getItem(key)]));
+  const written = [];
+  try {
+    for (const [key, raw] of entries) { storage.setItem(key, raw); written.push(key); }
+  } catch (error) {
+    for (const key of written.reverse()) {
+      const previous = original.get(key);
+      if (previous === null) storage.removeItem(key);
+      else storage.setItem(key, previous);
+    }
+    throw error;
+  }
+}
+/* CALM_BACKUP_VALIDATION_END */
+
 $('importBtn').onclick=()=> $('importFile').click();
 $('importFile').onchange=(e)=>{
-  const f=e.target.files[0]; if(!f) return;
-  const r=new FileReader(); r.onload=()=>{ try{ const o=JSON.parse(r.result); Object.entries(o).forEach(([k,v])=>{ if(k.startsWith('cc_')) localStorage.setItem(k,v); }); location.reload(); }catch(err){ alert('Could not read that file.'); } }; r.readAsText(f);
+  const file=e.target.files[0]; e.target.value='';
+  if(!file) return;
+  if(file.size > 2 * 1024 * 1024){ alert('Backup exceeds the 2 MB limit. Nothing was changed.'); return; }
+  const reader=new FileReader();
+  reader.onerror=()=> alert('The backup could not be read. Nothing was changed.');
+  reader.onload=()=>{
+    try {
+      const entries=parseBackupForImport(reader.result);
+      if(!confirm('Import '+entries.length+' settings? Matching Calm Capital data on this device will be replaced. Export a backup first if needed.')) return;
+      applyBackupAtomically(entries, localStorage);
+      location.reload();
+    } catch(error) {
+      alert('Import failed; existing data was retained. '+(error.message || 'Please check the backup format.'));
+    }
+  };
+  reader.readAsText(file);
 };
 
 /* ---------- init ---------- */
