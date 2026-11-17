@@ -79,6 +79,7 @@
   nav.tabs button:hover { color: var(--ink); border-color: #3a4a54; }
   nav.tabs button.active { background: var(--accent-soft); color: var(--ink); border-color: var(--accent); }
   nav.tabs button.active .ix { border-color: var(--accent); color: var(--accent); }
+  nav.tabs button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
   /* Panels */
   section.view { display: none; animation: fade .25s ease; }
@@ -212,7 +213,7 @@
     <span>You've pre-committed to ignoring balances right now. Only rebalancing actions are surfaced.</span>
   </div>
 
-  <nav class="tabs" id="tabs"></nav>
+  <nav class="tabs" id="tabs" aria-label="Calm Capital sections"></nav>
 
   <!-- 1. IPS -->
   <section class="view" data-view="ips">
@@ -422,7 +423,7 @@ const store = {
 const fmt = (n) => isFinite(n) ? '₱' + Math.round(n).toLocaleString() : '—';
 const flash = (id) => { const e=$(id); if(!e) return; e.classList.add('show'); setTimeout(()=>e.classList.remove('show'), 1600); };
 
-/* ---------- Tabs ---------- */
+/* CALM_TAB_NAV_START */
 const TABS = [
   ['ips','Policy Statement'],
   ['paycheck','Paycheck'],
@@ -432,20 +433,43 @@ const TABS = [
   ['recoveries','Recoveries'],
   ['bear','Bear Mode'],
 ];
+const TAB_VIEWS = new Set(TABS.map(([view]) => view));
 const tabsEl = $('tabs');
-TABS.forEach(([v,label],i)=>{
-  const b = document.createElement('button');
-  b.innerHTML = `<span class="ix">${i+1}</span> ${label}`;
-  b.dataset.target = v;
-  b.onclick = ()=> showView(v);
-  tabsEl.appendChild(b);
+TABS.forEach(([view, label], i) => {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.innerHTML = `<span class="ix">${i+1}</span> ${label}`;
+  button.dataset.target = view;
+  button.setAttribute('aria-controls', 'calm-view-' + view);
+  button.onclick = () => showView(view, true);
+  tabsEl.appendChild(button);
 });
-function showView(v){
-  document.querySelectorAll('.view').forEach(s=> s.classList.toggle('active', s.dataset.view===v));
-  document.querySelectorAll('#tabs button').forEach(b=> b.classList.toggle('active', b.dataset.target===v));
-  store.set('lastView', v);
-  if(v==='networth') drawChart();
+document.querySelectorAll('.view').forEach(panel => {
+  panel.id = 'calm-view-' + panel.dataset.view;
+});
+function showView(view, pushHistory = false) {
+  if (!TAB_VIEWS.has(view)) return;
+  document.querySelectorAll('.view').forEach(panel =>
+    panel.classList.toggle('active', panel.dataset.view === view));
+  document.querySelectorAll('#tabs button').forEach(button => {
+    const selected = button.dataset.target === view;
+    button.classList.toggle('active', selected);
+    if (selected) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  });
+  if (pushHistory && location.hash !== '#' + view) {
+    history.pushState(null, '', '#' + view);
+  }
+  store.set('lastView', view);
+  if (view === 'networth') drawChart();
 }
+const savedTabView = store.get('lastView', 'ips');
+const defaultTabView = TAB_VIEWS.has(savedTabView) ? savedTabView : 'ips';
+function syncTabFromLocation() {
+  const requested = location.hash.slice(1);
+  showView(TAB_VIEWS.has(requested) ? requested : defaultTabView);
+}
+/* CALM_TAB_NAV_END */
 
 /* ---------- 1. IPS ---------- */
 const IPS_FIELDS = ['ips_purpose','ips_alloc','ips_rebal','ips_rules','ips_change'];
@@ -762,7 +786,9 @@ $('importFile').onchange=(e)=>{
 
 /* ---------- init ---------- */
 loadIPS(); renderChangeLog(); loadPC(); loadNW(); loadMT(); loadFL(); loadRC(); loadBear();
-showView(store.get('lastView','ips'));
+syncTabFromLocation();
+window.addEventListener('hashchange', syncTabFromLocation);
+window.addEventListener('popstate', syncTabFromLocation);
 window.addEventListener('resize', ()=>{ if($('networth').classList.contains('active')) drawChart(); });
 </script>
 </body>
