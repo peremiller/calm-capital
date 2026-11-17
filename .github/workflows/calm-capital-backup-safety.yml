@@ -2,12 +2,14 @@ name: Calm Capital backup safety
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -15,7 +17,15 @@ jobs:
           node-version: '22'
       - name: Test legacy backup validation and atomic data preservation
         run: node --test tests/import-safety.test.mjs
+      - name: Test history, deep links and untouched saved data
+        run: node --test tests/tab-navigation.test.mjs
       - name: Verify canonical offline manifest remains reproducible
         run: |
           python3 scripts/build-offline.py
           git diff --exit-code -- index.html sw.js offline-assets.json
+      - name: Install Chromium for real UI checks
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Verify real responsive and keyboard deep-link behavior
+        run: node tests/tab-navigation.browser.mjs
