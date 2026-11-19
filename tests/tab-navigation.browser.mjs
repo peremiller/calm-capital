@@ -37,6 +37,16 @@ try {
       if(await page.locator('#tabs button[aria-current="page"]').getAttribute('data-target')!=='paycheck')throw Error('Browser Forward failed');
       await page.reload();
       if(await page.locator('#tabs button[aria-current="page"]').getAttribute('data-target')!=='paycheck')throw Error('Refresh deep link failed');
+      // Keyboard users need a strong focus indicator on form fields, not only tabs.
+      const ips=page.locator('#tabs button[data-target="ips"]');
+      await ips.focus();await ips.press('Enter');
+      const purpose=page.locator('#ips_purpose');
+      await purpose.focus();
+      const ring=await purpose.evaluate(el=>({style:getComputedStyle(el).outlineStyle,width:parseFloat(getComputedStyle(el).outlineWidth)}));
+      if(ring.style!=='solid'||ring.width<3)throw Error('Keyboard input focus indicator missing');
+      await page.locator('#exportBtn').focus();
+      const buttonRing=await page.locator('#exportBtn').evaluate(el=>parseFloat(getComputedStyle(el).outlineWidth));
+      if(buttonRing<3)throw Error('Keyboard action button focus indicator missing');
       const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('cc_ips_purpose')));
       if(stored!=='Preserved')throw Error('Local record lost');
       if(errors.length)throw Error('Page JS error: '+errors.join(','));
