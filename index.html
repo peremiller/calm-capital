@@ -101,6 +101,19 @@
     border-radius: 9px; padding: 10px 12px; font-size: .95rem; font-family: inherit; resize: vertical;
   }
   input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
+  /* Visible keyboard focus, including the visually hidden bear-mode switch. */
+  input:focus-visible, textarea:focus-visible, select:focus-visible,
+  a:focus-visible, button:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+  }
+  .switch input:focus-visible + .slider {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  }
   textarea { min-height: 90px; line-height: 1.6; }
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
