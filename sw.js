@@ -1,4 +1,4 @@
-const CONFIG = {"app":"calm-capital","version":"79d4e2c5c7d5bd769793","assets":["favicon.svg","index.html","manifest.webmanifest","offline-client.js"],"pages":["index.html"],"spa":false};
+const CONFIG = {"app":"calm-capital","version":"8208f8c1b8e857544f11","assets":["favicon.svg","index.html","manifest.webmanifest","offline-client.js"],"pages":["index.html"],"spa":false};
 const BASE = new URL('./', self.location.href);
 const PREFIX = 'pages-offline-' + CONFIG.app + '-';
 const CACHE = PREFIX + CONFIG.version;
